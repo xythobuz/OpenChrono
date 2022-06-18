@@ -19,6 +19,7 @@
 
 #define SENSOR_DISTANCE 70.0 /* in mm */
 #define BB_WEIGHT 0.25 /* in g */
+#define BB_WEIGHTS { 0.20, 0.23, 0.25, 0.28, 0.475 } /* in g */
 
 // --------------------------------------
 
@@ -28,7 +29,7 @@
 #define IMPERIAL 1
 #define JOULES 2
 
-#define PREFERRED_UNITS JOULES
+#define PREFERRED_UNITS METRIC
 
 // --------------------------------------
 
@@ -51,6 +52,7 @@
 }
 
 #define SCREEN_TIMEOUT 2500 /* in ms */
+#define FLIP_SCREEN 0
 
 // --------------------------------------
 
@@ -60,6 +62,7 @@
 
 #define HEADING_FONT u8g2_font_VCR_OSD_tr
 #define TEXT_FONT u8g2_font_NokiaLargeBold_tr
+#define SMALL_FONT u8g2_font_helvB08_tr
 
 // --------------------------------------
 

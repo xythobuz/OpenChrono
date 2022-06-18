@@ -29,7 +29,7 @@ void lcd_init(void) {
     u8g2.setFontPosBottom();
 
     u8g2.clearBuffer();
-    u8g2.setFlipMode(1);
+    u8g2.setFlipMode(FLIP_SCREEN);
 
     String s = F("OpenChrono");
     u8g2.setFont(HEADING_FONT);
@@ -54,7 +54,7 @@ void lcd_init(void) {
     u8g2.setFont(TEXT_FONT);
     u8g2.drawStr(
         0,
-        u8g2.getDisplayHeight() - u8g2.getMaxCharHeight() - 4,
+        u8g2.getDisplayHeight() - u8g2.getMaxCharHeight() - 2,
         s.c_str()
     );
 
@@ -63,7 +63,7 @@ void lcd_init(void) {
     u8g2.setFont(TEXT_FONT);
     u8g2.drawStr(
         (u8g2.getDisplayWidth() - u8g2.getStrWidth(s.c_str())) / 2,
-        u8g2.getDisplayHeight() - u8g2.getMaxCharHeight() - 4,
+        u8g2.getDisplayHeight() - u8g2.getMaxCharHeight() - 2,
         s.c_str()
     );
 
@@ -72,7 +72,7 @@ void lcd_init(void) {
     u8g2.setFont(TEXT_FONT);
     u8g2.drawStr(
         u8g2.getDisplayWidth() - u8g2.getStrWidth(s.c_str()),
-        u8g2.getDisplayHeight() - u8g2.getMaxCharHeight() - 4,
+        u8g2.getDisplayHeight() - u8g2.getMaxCharHeight() - 2,
         s.c_str()
     );
 
@@ -103,7 +103,7 @@ void lcd_draw(uint8_t screen) {
             || (screen == SCREEN_MIN) || (screen == SCREEN_MAX)) {
         if (tick_count < 1) {
             u8g2.clearBuffer();
-            u8g2.setFlipMode(1);
+            u8g2.setFlipMode(FLIP_SCREEN);
 
             String s = F("Ready!");
             u8g2.setFont(HEADING_FONT);
@@ -132,10 +132,16 @@ void lcd_draw(uint8_t screen) {
 
         double metric = tick_to_metric(tick);
         double imperial = metric_to_imperial(metric);
-        double joules = metric_to_joules(metric, BB_WEIGHT);
+
+        double weights[] = BB_WEIGHTS;
+        double joules[sizeof(weights) / sizeof(weights[0])];
+
+        for (uint8_t i = 0; i < (sizeof(weights) / sizeof(weights[0])); i++) {
+            joules[i] = metric_to_joules(metric, weights[i]);
+        }
 
         u8g2.clearBuffer();
-        u8g2.setFlipMode(1);
+        u8g2.setFlipMode(FLIP_SCREEN);
         u8g2.setFont(TEXT_FONT);
 
         String s;
@@ -158,28 +164,78 @@ void lcd_draw(uint8_t screen) {
             s.c_str()
         );
 
+        uint8_t left_off = (u8g2.getDisplayHeight() - (u8g2.getMaxCharHeight() * 4 + 3)) / 2;
+
         s = String(metric, 0);
         s += F(" m/s");
+        uint8_t l1 = u8g2.getStrWidth(s.c_str());
         u8g2.drawStr(
             0,
-            u8g2.getMaxCharHeight() * 2 + 1,
+            u8g2.getMaxCharHeight() * 2 + 1 + left_off,
             s.c_str()
         );
 
         s = String(imperial, 0);
         s += F(" FPS");
+        uint8_t l2 = u8g2.getStrWidth(s.c_str());
         u8g2.drawStr(
             0,
-            u8g2.getMaxCharHeight() * 3 + 2,
+            u8g2.getMaxCharHeight() * 3 + 2 + left_off,
             s.c_str()
         );
 
-        s = String(joules, 2);
-        s += F(" J");
-        u8g2.drawStr(
-            0,
-            u8g2.getMaxCharHeight() * 4 + 3,
-            s.c_str()
+        uint8_t l3 = 0;
+        for (uint8_t i = 0; i < (sizeof(weights) / sizeof(weights[0])); i++) {
+            if (weights[i] == BB_WEIGHT) {
+                s = String(joules[i], 2);
+                s += F(" J");
+                l3 = u8g2.getStrWidth(s.c_str());
+                u8g2.drawStr(
+                    0,
+                    u8g2.getMaxCharHeight() * 4 + 3 + left_off,
+                    s.c_str()
+                );
+                break;
+            }
+        }
+
+        uint8_t l4 = 0;
+        uint8_t h = u8g2.getMaxCharHeight() + 1;
+        for (uint8_t i = 0; i < (sizeof(weights) / sizeof(weights[0])); i++) {
+            if (weights[i] == BB_WEIGHT) {
+                //u8g2.setFont(TEXT_FONT);
+                continue;
+            } else {
+                u8g2.setFont(SMALL_FONT);
+            }
+
+            s = String(weights[i], 2);
+            s += F("g ");
+            s += String(joules[i], 2);
+            s += F("J");
+
+            uint8_t l = u8g2.getStrWidth(s.c_str());
+            if (l > l4) {
+                l4 = l;
+            }
+
+            h += u8g2.getMaxCharHeight() + 1;
+
+            u8g2.drawStr(
+                u8g2.getDisplayWidth() - l,
+                h,
+                s.c_str()
+            );
+        }
+
+        uint8_t l_left = max(max(l1, l2), l3);
+        uint8_t l_right = u8g2.getDisplayWidth() - l4;
+        uint8_t lmax = (uint8_t)((((uint16_t)l_left) + ((uint16_t)l_right)) / 2);
+
+        u8g2.setFont(TEXT_FONT);
+        u8g2.drawLine(
+            lmax, u8g2.getMaxCharHeight() + 2,
+            lmax, u8g2.getDisplayHeight()
         );
 
         u8g2.sendBuffer();
@@ -189,7 +245,7 @@ void lcd_draw(uint8_t screen) {
         String s;
 
         u8g2.clearBuffer();
-        u8g2.setFlipMode(1);
+        u8g2.setFlipMode(FLIP_SCREEN);
         u8g2.setFont(TEXT_FONT);
 
         // max text
@@ -274,7 +330,7 @@ void lcd_loop(void) {
     if ((millis() - lcd_rotate_time) > SCREEN_TIMEOUT) {
         lcd_rotate_time = millis();
         lcd_screen++;
-        if (lcd_screen >= sizeof(screens)) {
+        if (lcd_screen >= (sizeof(screens) / sizeof(screens[0]))) {
             lcd_screen = 0;
         }
 
