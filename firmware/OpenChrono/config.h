@@ -73,6 +73,10 @@
 
 // --------------------------------------
 
+#define IR_LED_PIN 4
+
+// --------------------------------------
+
 // placeholder data for debugging purposes
 
 #define DEBUG_TICK_COUNT 0

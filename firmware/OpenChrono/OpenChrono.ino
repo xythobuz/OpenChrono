@@ -45,6 +45,9 @@ static void measure() {
 }
 
 void setup() {
+    pinMode(IR_LED_PIN, OUTPUT);
+    digitalWrite(IR_LED_PIN, HIGH);
+
     lcd_init();
     delay(SCREEN_TIMEOUT); // show splash screen
 
