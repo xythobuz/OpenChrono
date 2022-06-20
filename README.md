@@ -57,6 +57,9 @@ I don't have the terminals for that yet so it is not finished.
 
 I'm also looking to design a LiPo version with charger included in the future.
 
+[![Breadboard](electronics/OpenChrono_bb.png)](electronics/OpenChrono_bb.png)
+[![Schematics](electronics/OpenChrono_schem.png)](electronics/OpenChrono_schem.png)
+
 ## Software
 
 This project uses the [U8g2 library by olikraus](https://github.com/olikraus/u8g2) to draw to the I2C OLED display.
