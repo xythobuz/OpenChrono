@@ -6,16 +6,16 @@ body_gap = 0.1;
 
 body_screw_off = 10;
 body_screw_pos = 20;
-body_screw_dia = 3.2;
-body_screw_head = 5.8;
+body_screw_dia = 3.3;
+body_screw_head = 6.0;
 body_screw_depth = 3.2;
-body_screw_insert_dia = 5.0;
-body_screw_insert_height = 15.0;
+body_screw_insert_dia = 4.8;
+body_screw_insert_height = 12.0;
 
 lcd_pcb_w = 29.0;
 lcd_pcb_h = 29.0;
 lcd_pcb_d = 5.2;
-lcd_hole_dia = 2.0;
+lcd_hole_dia = 1.9;
 lcd_hole_w = 6.0;
 lcd_hole_h = 2.5;
 lcd_off = 10.0;
@@ -51,7 +51,7 @@ switch_h = 6.5;
 switch_d = 10.0;
 switch_plate_w = 20.5;
 switch_plate_h = switch_h;
-switch_dia = 2.6;
+switch_dia = 2.4;
 switch_screw_l = 10.0;
 switch_screw_d = 15.0;
 switch_off = 15;
@@ -95,8 +95,45 @@ thread_profile_mac11 = [
 // debug / testing
 thread_profile_none = [ false, 0, 0, 0, 0 ];
 
-thread_profile = thread_profile_m14;
-thread_base = 1.0;
+thread_profiles = [
+    thread_profile_1911,
+    thread_profile_m14,
+    thread_profile_mac11
+];
+
+thread_base = 5.0;
+
+test_bat_w = 47;
+test_bat_h = 59;
+test_bat_d = 15;
+test_bat_dia = 2.9;
+test_bat_off = 30.5;
+test_bat_l = 8;
+
+thread_adapter_screw_inset = 5;
+thread_adapter_in_body = 5;
+thread_adapter_h = body_screw_insert_height - thread_adapter_in_body;
+
+enable_gap_support = true;
+
+text1 = [
+    "OpenChrono",
+    "Liberation Sans:style=Bold",
+    12.0,
+    2.0,
+    55
+];
+text2 = [
+    "by xythobuz.de",
+    "Liberation Sans:style=Bold",
+    9.0,
+    2.0,
+    -60
+];
+
+texts_left = [ text1, text2 ];
+
+include_uv_leds = true;
 
 // how deep things on the outside have to be set in
 function circle_offset_deviation(off, dia) =
@@ -109,7 +146,12 @@ module lcd_cutout() {
         for (x = [0, lcd_pcb_w - lcd_hole_w])
         for (y = [0, lcd_pcb_h - lcd_hole_w])
         translate([x, y, -1])
-            cube([lcd_hole_w, lcd_hole_w, lcd_hole_h + 1]);
+        cube([lcd_hole_w, lcd_hole_w, lcd_hole_h + 1]);
+        
+        // TODO hacky
+        if (enable_gap_support)
+        translate([0, (lcd_pcb_w - 1) / 2, 0])
+        cube([lcd_pcb_w, 1, 9]);
     }
             
     for (x = [0, lcd_hole_off_x])
@@ -180,10 +222,41 @@ module thread(profile, thread_draw) {
     }
 }
 
+module thread_profile_adapter(profile, draw_profile) {
+    difference() {
+        thread(profile, draw_profile);
+        
+        for (r = [45, -45])
+        for (r2 = [0, 180])
+        rotate([0, 0, r + r2])
+        translate([0, (outer_dia - body_screw_insert_dia) / 2 - thread_adapter_screw_inset, -1])
+        cylinder(d = body_screw_dia, h = 100);
+    }
+}
+
+module thread_adapter() {
+    difference() {
+        cylinder(d = outer_dia, h = thread_adapter_h);
+        
+        translate([0, 0, -1])
+        cylinder(d = inner_dia, h = thread_adapter_h + 2);
+        
+        for (r = [45, -45])
+        rotate([0, 0, r])
+        translate([0, (outer_dia - body_screw_insert_dia) / 2 - thread_adapter_screw_inset, -thread_adapter_in_body])
+        cylinder(d = body_screw_insert_dia, h = body_screw_insert_height + 1);
+    }
+}
+
 module half_body(right_side) {
     difference() {
-        // body
-        cylinder(d = outer_dia, h = height);
+        union() {
+            // body
+            cylinder(d = outer_dia, h = height);
+            
+            translate([0, 0, height])
+            thread_adapter();
+        }
         
         // inner tube
         translate([0, 0, -1])
@@ -198,6 +271,17 @@ module half_body(right_side) {
         scale([x, 1, 1])
         for (z = [led_off, height - led_off])
         translate([inner_dia / 2 - 1, 0, z])
+        rotate([0, 90, 0]) {
+            cylinder(d = led_dia, h = led_l + led_ridge_h + 1);
+            
+            translate([0, 0, led_l + 1])
+            cylinder(d = led_ridge_dia, h = led_ridge_h);
+        }
+        
+        if (include_uv_leds)
+        for (x = [1, -1])
+        scale([x, 1, 1])
+        translate([inner_dia / 2 - 1, 0, led_off / 2])
         rotate([0, 90, 0]) {
             cylinder(d = led_dia, h = led_l + led_ridge_h + 1);
             
@@ -233,6 +317,13 @@ module half_body(right_side) {
             
             translate([-inner_dia / 2 - led_l - led_ridge_h - 5, 0, -height / 2 + led_off - 1])
             cube([led_ridge_dia + 2, led_ridge_dia - 2, led_ridge_h]);
+            
+            if (include_uv_leds)
+            if (z < 0)
+            for (x = [0, 5])
+            translate([-inner_dia / 2 - led_l - led_ridge_h - x, 0, led_off / 2])
+            rotate([0, 90, 0])
+            cylinder(d = led_ridge_dia, h = led_ridge_h);
         }
     }
 }
@@ -254,14 +345,9 @@ module screw_holes(with_head) {
     }
 }
 
-module left_half(thread_draw) {
+module left_half() {
     difference() {
-        union() {
-            half_body(false);
-            
-            translate([0, 0, height])
-            thread(thread_profile, thread_draw);
-        }
+        half_body(false);
         
         translate([-outer_dia / 2 - 1, -outer_dia / 2 - 1 + body_gap / 2, height - 1])
         cube([outer_dia + 2, outer_dia / 2 + 1, 50]);
@@ -322,18 +408,19 @@ module left_half(thread_draw) {
                 cylinder(d = led_ridge_dia, h = led_ridge_h);
             }
         }
+        
+        for (t = texts_left)
+        rotate([0, 0, -t[4]])
+        translate([0, outer_dia / 2 - t[3], (height + thread_adapter_h) / 2])
+        rotate([0, -90, -90])
+        linear_extrude(height = t[3] + 1)
+        text(t[0], size = t[2], font = t[1], halign = "center", valign="center");
     }
 }
 
-module right_half(thread_draw) {
+module right_half() {
     difference() {
-        union() {
-            half_body(true);
-            
-            translate([0, 0, height])
-            rotate([0, 0, 180])
-            thread(thread_profile, thread_draw);
-        }
+        half_body(true);
         
         translate([-outer_dia / 2 - 1, -outer_dia / 2 - 1 + body_gap / 2, height - 1])
         cube([outer_dia + 2, outer_dia / 2 + 1, 50]);
@@ -343,6 +430,12 @@ module right_half(thread_draw) {
         translate([outer_dia / 2 - arduino_w -((outer_dia / 2) - (inner_dia / 2) - arduino_w) / 2, arduino_d / 2, -arduino_h / 2 + height / 2])
         rotate([90, 0, 0])
         arduino_cutout();
+    }
+}
+
+module right_half_aaa_bat() {
+    difference() {
+        right_half();
         
         for (a = [0, bat_angle, -bat_angle])
         rotate([0, 0, a])
@@ -351,40 +444,83 @@ module right_half(thread_draw) {
     }
 }
 
-module assembly_closed(thread_draw) {
-    right_half(thread_draw);
-    
-    rotate([0, 0, 180])
-    left_half(thread_draw);
+module right_half_testing() {
+    difference() {
+        right_half();
+        
+        difference() {
+            translate([-test_bat_w / 2, outer_dia / 2 - circle_offset_deviation(test_bat_w / 2, outer_dia), (height - test_bat_h) / 2])
+            cube([test_bat_w, test_bat_d + 1, test_bat_h]);
+            
+            // TODO hacky
+            if (enable_gap_support)
+            translate([-0.5, 14, 20])
+            cube([1, 13, test_bat_h + 2]);
+        }
+        
+        for (x = [test_bat_off / 2, -test_bat_off / 2])
+        translate([x, outer_dia / 2 - circle_offset_deviation(test_bat_w / 2, outer_dia) - test_bat_l, height / 2])
+        rotate([-90, 0, 0])
+        cylinder(d = test_bat_dia, h = outer_dia / 2);
+        
+        // TODO hacky power cable
+        translate([15, -10, 60])
+        rotate([-90, 0, 12])
+        cylinder(d = 6.0, h = outer_dia);
+    }
 }
 
-module assembly_opened(angle, thread_draw) {
+module assembly_closed() {
+    //right_half_aaa_bat();
+    right_half_testing();
+    
+    rotate([0, 0, 180])
+    left_half();
+    
+    translate([0, 0, height + thread_adapter_h + 0.5])
+    thread_profile_adapter(thread_profiles[0], false);
+}
+
+module assembly_opened(angle) {
     translate([-outer_dia / 2, 0, 0]) {
+        //rotate([0, 0, angle / 2])
+        //translate([outer_dia / 2, 0, 0])
+        //right_half_aaa_bat();
+        
         rotate([0, 0, angle / 2])
         translate([outer_dia / 2, 0, 0])
-        right_half(thread_draw);
+        right_half_testing();
         
         rotate([0, 0, -angle / 2])
         translate([outer_dia / 2, 0, 0])
         rotate([0, 0, 180])
-        left_half(thread_draw);
+        left_half();
     }
 }
 
-module print() {
+module print(all_thread_adapters) {
     translate([outer_dia / 2 + 5, 0, 0])
-    left_half(true);
+    left_half();
+    
+    //translate([-outer_dia / 2 - 5, 0, 0])
+    //right_half_aaa_bat(true);
     
     translate([-outer_dia / 2 - 5, 0, 0])
-    right_half(true);
+    right_half_testing();
+
+    if (all_thread_adapters)
+    for (p = [0 : len(thread_profiles) - 1])
+    translate([(p - floor(len(thread_profiles) / 2)) * (outer_dia + 5), -outer_dia / 2 - 5, 0])
+    thread_profile_adapter(thread_profiles[p], true);
 }
 
 //lcd_cutout();
 
-//left_half(false);
-//right_half(false);
+//left_half();
+//right_half();
 
-//assembly_closed(false);
-//assembly_opened(90, false);
+//assembly_closed();
+//assembly_opened(90);
 
-print();
+//print(true);
+print(false);
