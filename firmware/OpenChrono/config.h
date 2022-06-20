@@ -15,9 +15,8 @@
 
 // --------------------------------------
 
-// hardware details
-
 #define SENSOR_DISTANCE 70.0 /* in mm */
+
 #define BB_WEIGHT 0.25 /* in g */
 #define BB_WEIGHTS { 0.20, 0.23, 0.25, 0.28, 0.475 } /* in g */
 
@@ -74,6 +73,12 @@
 // --------------------------------------
 
 #define IR_LED_PIN 4
+#define UV_LED_PIN 5
+
+// --------------------------------------
+
+// allowed values: 1, 8, 64, 256, 1024
+#define TIMER_PRESCALER 64
 
 // --------------------------------------
 

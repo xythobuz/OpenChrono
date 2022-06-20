@@ -19,4 +19,6 @@ void interrupt_init();
 void timer_init();
 uint16_t timer_get();
 
+void timer_start();
+
 #endif // __TIMING_H__

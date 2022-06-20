@@ -166,7 +166,11 @@ void lcd_draw(uint8_t screen) {
 
         uint8_t left_off = (u8g2.getDisplayHeight() - (u8g2.getMaxCharHeight() * 4 + 3)) / 2;
 
-        s = String(metric, 0);
+        if (metric < 10.0) {
+            s = String(metric, 1);
+        } else {
+            s = String(metric, 0);
+        }
         s += F(" m/s");
         uint8_t l1 = u8g2.getStrWidth(s.c_str());
         u8g2.drawStr(
@@ -175,7 +179,11 @@ void lcd_draw(uint8_t screen) {
             s.c_str()
         );
 
-        s = String(imperial, 0);
+        if (imperial < 10.0) {
+            s = String(imperial, 1);
+        } else {
+            s = String(imperial, 0);
+        }
         s += F(" FPS");
         uint8_t l2 = u8g2.getStrWidth(s.c_str());
         u8g2.drawStr(
@@ -251,9 +259,18 @@ void lcd_draw(uint8_t screen) {
         // max text
         double max_metric = tick_to_metric(max);
         if (PREFERRED_UNITS == METRIC) {
-            s = String(max_metric, 0);
+            if (max_metric < 10.0) {
+                s = String(max_metric, 1);
+            } else {
+                s = String(max_metric, 0);
+            }
         } else if (PREFERRED_UNITS == IMPERIAL) {
-            s = String(metric_to_imperial(max_metric), 0);
+            double max_imperial = metric_to_imperial(max_metric);
+            if (max_imperial < 10.0) {
+                s = String(max_imperial, 1);
+            } else {
+                s = String(max_imperial, 0);
+            }
         } else {
             s = String(metric_to_joules(max_metric, BB_WEIGHT), 2);
         }
@@ -295,9 +312,18 @@ void lcd_draw(uint8_t screen) {
         // min text
         double min_metric = tick_to_metric(min);
         if (PREFERRED_UNITS == METRIC) {
-            s = String(min_metric, 0);
+            if (min_metric < 10.0) {
+                s = String(min_metric, 1);
+            } else {
+                s = String(min_metric, 0);
+            }
         } else if (PREFERRED_UNITS == IMPERIAL) {
-            s = String(metric_to_imperial(min_metric), 0);
+            double min_imperial = metric_to_imperial(min_metric);
+            if (min_imperial < 10.0) {
+                s = String(min_imperial, 1);
+            } else {
+                s = String(min_imperial, 0);
+            }
         } else {
             s = String(metric_to_joules(min_metric, BB_WEIGHT), 2);
         }
@@ -316,9 +342,9 @@ void lcd_draw(uint8_t screen) {
         for (int i = 0; i < tick_count - 1; i++) {
             u8g2.drawLine(
                 graph_start + (i * segment_w),
-                map(tick_history[i], min, max, 0, u8g2.getDisplayHeight() - 1),
+                map(tick_history[i], min, max, u8g2.getDisplayHeight() - 1, 0),
                 graph_start + ((i + 1) * segment_w),
-                map(tick_history[i + 1], min, max, 0, u8g2.getDisplayHeight() - 1)
+                map(tick_history[i + 1], min, max, u8g2.getDisplayHeight() - 1, 0)
             );
         }
 

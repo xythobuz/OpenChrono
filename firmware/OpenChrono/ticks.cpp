@@ -34,6 +34,9 @@
  * speed = SENSOR_DISTANCE / (65535 * 1000 / F_CPU)
  * so we can measure from 17m/s (61km/h, approx. 0.03J @ 0.2g)
  * up to ridulous 1120000m/s (4032000km/h)
+ *
+ * with a prescaler of 8, we can measure from 2.14m/s to 140000m/s
+ * with a prescaler of 64, we can measure from 0.27m/s to 17500m/s
  */
 
 #include <Arduino.h>
@@ -100,7 +103,7 @@ uint16_t tick_min() {
 
 double tick_to_metric(uint16_t ticks) {
     // v = d / t
-    double period = 1000.0 / ((double)(F_CPU));
+    double period = 1000.0 / ((double)(F_CPU / TIMER_PRESCALER));
     double time = period * (double)ticks;
     double speed = (double)SENSOR_DISTANCE / time;
     return speed;

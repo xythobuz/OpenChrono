@@ -21,7 +21,7 @@ static void calculate(uint16_t a, uint16_t b) {
         ticks = b - a;
     } else {
         // the timer overflowed between measurements!
-        uint32_t tmp = ((uint32_t)b) - ((uint32_t)a);
+        int32_t tmp = ((int32_t)b) - ((int32_t)a);
         tmp += 0x10000;
         ticks = (uint16_t)tmp;
     }
@@ -45,8 +45,13 @@ static void measure() {
 }
 
 void setup() {
+    // we simply turn on the IR LEDs all the time
     pinMode(IR_LED_PIN, OUTPUT);
     digitalWrite(IR_LED_PIN, HIGH);
+
+    // but the UV LEDs will only be pulsed on firing!
+    pinMode(UV_LED_PIN, OUTPUT);
+    digitalWrite(UV_LED_PIN, LOW);
 
     lcd_init();
     delay(SCREEN_TIMEOUT); // show splash screen
@@ -56,9 +61,15 @@ void setup() {
 }
 
 void loop() {
-    if ((time_a == 1) && (time_b == 1)) {
-        // we got an event on both inputs
-        measure();
+    if (trigger_b) {
+        if (trigger_a) {
+            // we got an event on both inputs
+            measure();
+        } else {
+            // we got a false second trigger!
+            // clear so next calculation will be correct
+            trigger_b = 0;
+        }
     }
 
     lcd_loop();
