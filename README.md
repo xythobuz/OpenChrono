@@ -24,7 +24,7 @@ Besides some common stuff like soldering wire and hotglue you need the following
 | IR Phototransistor | SFH 309 FA-5  | 2x    |
 | IR LED 3mm         |               | 2x    |
 | Resistor           | 1k Ohm        | 2x    |
-| Resistor           | 100 Ohm       | 1x    |
+| Resistor           | 50 Ohm        | 1x    |
 | Screw              | M2 10mm       | 4x    |
 | Screw              | M2.5 10mm     | 2x    |
 | Screw              | M3 16mm       | 8x    |
@@ -35,16 +35,16 @@ For the UV tracer option you also need the following parts.
 | Description | Type    | Count |
 | ----------- | ------- | ----- |
 | UV LED 3mm  |         | 2x    |
-| Resistor    | 100 Ohm | 1x    |
+| Resistor    | 50 Ohm  | 1x    |
 
 You have different options for powering the project.
 My first version for testing uses a pre-made AA battery holder.
 
-| Description    | Type   | Count |
-| -------------- | ------ | ----- |
-| AA Battery     |        | 3x    |
-| AA Bat. Holder |        | 1x    |
-| Screw (sunk)   | M3 6mm | 2x    |
+| Description    | Type      | Count |
+| -------------- | --------- | ----- |
+| AA Battery     |           | 3x    |
+| AA Bat. Holder |           | 1x    |
+| Screw (sunk)   | M3 <= 6mm | 2x    |
 
 The originally intended variant is a AAA battery holder printed into the model.
 I don't have the terminals for that yet so it is not finished.
@@ -55,10 +55,42 @@ I don't have the terminals for that yet so it is not finished.
 | Bat. Terminal Neg. |      | 3x    |
 | Bat. Terminal Pos. |      | 3x    |
 
-I'm also looking to design a LiPo version with charger included in the future.
+The AA and AAA options are not recommended due to their bulk and weight!
+They also have problems with disconnections on firing impulses.
+
+The preferred version uses a single LiPo cell and a charger PCB.
+
+| Description     | Type      | Count |
+| --------------- | --------- | ----- |
+| LiPo Battery    | 600mAh    | 1x    |
+| Resistor SMD    | 4k Ohm    | 1x    |
+| Charging Module | TP4056    | 1x    |
+| Screw           | M3 <= 6mm | 4x    |
+
+Be careful though!
+If you use the LiPo charger board, they normally come with the charge current set to 1A with a 1.2k Ohm resistor.
+You need to put in a higher valued resistor instead, otherwise the small battery will be charged with far too much current and the charger will get very hot.
+I recommend 4k Ohm or more.
+See [this page for more info](https://www.best-microcontroller-projects.com/tp4056.html#TP4056_Current_Programming_Resistor).
 
 [![Breadboard](electronics/OpenChrono_bb.png)](electronics/OpenChrono_bb.png)
 [![Schematics](electronics/OpenChrono_schem.png)](electronics/OpenChrono_schem.png)
+
+### Resistor Values
+
+The proper values for the IR LED current-limiting resistors, as well as the pull-up resistors for the phototransistors depend on the exact parts used.
+We want to run the transistor in "switch mode", as [described here](https://www.electronics-notes.com/articles/electronic_components/transistor/phototransistor-circuits-applications.php).
+So we need to keep the pull-up value low enough that it quickly is able to pull the IO back to high when the BB passes.
+At the same time we also want the LED resistor as low as possible, so the transistor properly switches the IO to low when the light is shining on it.
+
+I built a first prototype with potis instead of resistors on the outside of the case, to be able to adjust the values while measuring the outputs with an oscilloscope.
+Using this setup, I arrived at values of 100 Ohm for the LEDs at 4V supply voltage, and 1k Ohm for the phototransistors.
+When I later ran again with batteries that had a bit lower voltage, it no longer worked reliably.
+So for use with 3x AA(A) batteries, I went down to 50 Ohm for the LEDs.
+
+Also note the type of the phototransistor, "SFH 309 FA-5".
+The '5' at the end gives the current that passes when light shines on the sensor, in this case 1.6mA - 3.2mA.
+So if you use a different sensor you will probably have to adjust the resistor values!
 
 ## Software
 

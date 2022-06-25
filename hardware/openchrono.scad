@@ -56,31 +56,40 @@ switch_screw_l = 10.0;
 switch_screw_d = 15.0;
 switch_off = 15;
 
-bat_h = bat_l + bat_spring_dist + 2 * bat_wall + 2 * bat_tab_d;
-
-$fn = 42;
-
-echo("sensor_distance", height - 2 * led_off);
-
-// https://dkprojects.net/openscad-threads/ 
-include <extern/threads.scad>
-
 // 1911
 thread_profile_1911 = [
     true, // type is_male
     12.0, // diameter
     1.0, // pitch
     0.0, // offset
-    9.0 // length
+    9.0, // length
+    0.0, // offset dia
+    9.1, // inner hole
+    true, // is cw thread
 ];
 
-// M14x1.0 female thread
-thread_profile_m14 = [
+// M14x1.0 CW female thread
+thread_profile_m14_cw = [
     false, // type is_male
     14.0, // diameter
     1.0, // pitch
     0.0, // offset
-    12.0 // length
+    12.0, // length
+    0.0, // offset dia
+    8.5, // inner hole
+    true, // is cw thread
+];
+
+// M14x1.0 CCW female thread
+thread_profile_m14_ccw = [
+    false, // type is_male
+    14.0, // diameter
+    1.0, // pitch
+    0.0, // offset
+    12.0, // length
+    0.0, // offset dia
+    8.5, // inner hole
+    false, // is cw thread
 ];
 
 // ASG / KWC Cobray Ingram M11 CO2 NBB 6mm
@@ -88,17 +97,30 @@ thread_profile_mac11 = [
     false, // type is_male
     16.5, // diameter
     1.5, // pitch
-    8.0, // offset
-    10.0 // length
+    9.0, // offset
+    10.0, // length
+    20.0, // offset dia
+    8.5, // inner hole
+    true, // is cw thread
 ];
 
-// debug / testing
-thread_profile_none = [ false, 0, 0, 0, 0 ];
+thread_profile_giant = [
+    false, // type is_male
+    34.0, // diameter
+    1.0, // pitch
+    0.0, // offset
+    10.0, // length
+    0.0, // offset dia
+    8.5, // inner hole
+    true, // is cw thread
+];
 
 thread_profiles = [
     thread_profile_1911,
-    thread_profile_m14,
-    thread_profile_mac11
+    thread_profile_m14_cw,
+    thread_profile_m14_ccw,
+    thread_profile_mac11,
+    thread_profile_giant
 ];
 
 thread_base = 5.0;
@@ -113,8 +135,6 @@ test_bat_l = 8;
 thread_adapter_screw_inset = 5;
 thread_adapter_in_body = 5;
 thread_adapter_h = body_screw_insert_height - thread_adapter_in_body;
-
-enable_gap_support = true;
 
 text1 = [
     "OpenChrono",
@@ -131,13 +151,92 @@ text2 = [
     -60
 ];
 
-texts_left = [ text1, text2 ];
+text3 = [
+    "OpenChrono",
+    "Liberation Sans:style=Bold",
+    12.0 - 4,
+    1.0,
+    70
+];
+text4 = [
+    "by xythobuz.de",
+    "Liberation Sans:style=Bold",
+    9.0 - 2,
+    1.0,
+    -70
+];
 
+texts_left = [ text1, text2 ];
+texts_lipo = [ text3, text4 ];
+
+lipo_lid_height = 65;
+lipo_lid_width = 80;
+lipo_lid_d = 3.0;
+lipo_lid_gap = 0.5;
+lipo_lid_gap_d = 0.2;
+
+lipo_lid_screw_d_small = 2.8;
+lipo_lid_screw_d_big = 3.3;
+lipo_lid_screw_area = 10;
+lipo_lid_screw_len = 10.0;
+lipo_lid_screw_off = 5.0;
+
+lipo_lid_compartment_d = 15.0;
+lipo_lid_compartment_w = lipo_lid_width - 2 * lipo_lid_screw_area - 5;
+
+lipo_pcb_w = 18.0;
+lipo_pcb_h = 29.0;
+lipo_pcb_d = 5.0;
+lipo_pcb_usb_w = 9.0;
+lipo_pcb_usb_h = 3.6;
+lipo_pcb_usb_off = 1.4;
+lipo_pcb_usb_wall = 1.5;
+lipo_pcb_led_dia = 2.0;
+lipo_pcb_led_dist = 5.0;
+lipo_pcb_led_off_x = 1.75;
+lipo_pcb_led_off_z = 7.0;
+
+lipo_w = 30.0;
+lipo_h = 43.0;
+lipo_d = 9.0;
+
+enable_gap_support = true;
 include_uv_leds = true;
+
+lipo_lid_angle = circum_angle(lipo_lid_width - lipo_lid_gap * 2, outer_dia);
+lipo_lid_angle_hole = circum_angle(lipo_lid_width, outer_dia);
+lipo_lid_angle_compartment = circum_angle(lipo_lid_compartment_w, outer_dia);
+
+bat_h = bat_l + bat_spring_dist + 2 * bat_wall + 2 * bat_tab_d;
+
+$fn = 42;
+
+echo("sensor_distance", height - 2 * led_off);
+
+if (include_uv_leds)
+echo("uv_led_distance", led_off / 2);
+
+// https://dkprojects.net/openscad-threads/
+include <extern/threads.scad>
 
 // how deep things on the outside have to be set in
 function circle_offset_deviation(off, dia) =
     dia * (1 - sin(acos(off * 2 / dia))) / 2;
+
+// circumference to angle
+function circum_angle(width, dia) = width / dia * 180 / 3.141;
+
+// from https://3dprinting.stackexchange.com/questions/10638/creating-pie-slice-in-openscad
+module pie_slice(r, a) {
+    intersection() {
+        circle(r = r);
+        
+        square(r);
+        
+        rotate(a - 90)
+        square(r);
+    }
+}
 
 module lcd_cutout() {
     difference() {
@@ -150,8 +249,8 @@ module lcd_cutout() {
         
         // TODO hacky
         if (enable_gap_support)
-        translate([0, (lcd_pcb_w - 1) / 2, 0])
-        cube([lcd_pcb_w, 1, 9]);
+        translate([0, (lcd_pcb_w - 1) / 2, 1])
+        cube([lcd_pcb_w, 1, 8]);
     }
             
     for (x = [0, lcd_hole_off_x])
@@ -199,25 +298,29 @@ module thread(profile, thread_draw) {
         // male thread
         difference() {
             union() {
-                cylinder(d = outer_dia, h = thread_base);
-                metric_thread(profile[1], profile[2], profile[4] + thread_base, test=!thread_draw);
+                cylinder(d = outer_dia, h = thread_base + body_screw_depth);
+                
+                scale([1, profile[7] ? 1 : -1, 1])
+                metric_thread(profile[1], profile[2], profile[4] + thread_base + body_screw_depth, test=!thread_draw);
             }
             
             translate([0, 0, -1])
-            cylinder(d = inner_dia, h = profile[4] + thread_base + 2);
+            cylinder(d = profile[6], h = profile[4] + thread_base + body_screw_depth + 2);
         }
     } else {
         // female thread
         difference() {
-            cylinder(d = outer_dia, h = thread_base + profile[4] + profile[3]);
-            
-            metric_thread(profile[1], profile[2], profile[4] + thread_base + 1, true, test=!thread_draw);
-            
-            translate([0, 0, thread_base + profile[4]])
-            cylinder(d = profile[1] + 2, h = profile[3] + 1);
+            cylinder(d = outer_dia, h = thread_base + body_screw_depth + profile[4] + profile[3]);
             
             translate([0, 0, -1])
-            cylinder(d = inner_dia, h = profile[4] + thread_base + profile[3] + 2);
+            scale([1, profile[7] ? 1 : -1, 1])
+            metric_thread(profile[1], profile[2], profile[4] + thread_base + body_screw_depth + 2, true, test=!thread_draw);
+            
+            translate([0, 0, thread_base + body_screw_depth + profile[4]])
+            cylinder(d = profile[5], h = profile[3] + 1);
+            
+            translate([0, 0, -1])
+            cylinder(d = profile[6], h = profile[4] + thread_base + profile[3] + 2);
         } 
     }
 }
@@ -229,8 +332,30 @@ module thread_profile_adapter(profile, draw_profile) {
         for (r = [45, -45])
         for (r2 = [0, 180])
         rotate([0, 0, r + r2])
-        translate([0, (outer_dia - body_screw_insert_dia) / 2 - thread_adapter_screw_inset, -1])
-        cylinder(d = body_screw_dia, h = 100);
+        translate([0, (outer_dia - body_screw_insert_dia) / 2 - thread_adapter_screw_inset, 0]) {
+            translate([0, 0, -1])
+            cylinder(d = body_screw_dia, h = 50);
+            
+            translate([0, 0, thread_base])
+            cylinder(d = body_screw_head, h = 50);
+        }
+    }
+}
+
+module mac11_extender() {
+    difference() {
+        cylinder(d = outer_dia, h = 15);
+        
+        translate([0, 0, -1])
+        cylinder(d = 20, h = 15 + 2);
+        
+        for (r = [45, -45])
+        for (r2 = [0, 180])
+        rotate([0, 0, r + r2])
+        translate([0, (outer_dia - body_screw_insert_dia) / 2 - thread_adapter_screw_inset, 0]) {
+            translate([0, 0, -1])
+            cylinder(d = body_screw_dia, h = 50);
+        }
     }
 }
 
@@ -301,6 +426,13 @@ module half_body(right_side) {
             cylinder(d = led_ridge_dia, h = led_ridge_h);
             
             translate([-inner_dia / 2 - led_l - led_ridge_h - 5, 0, -10])
+            cylinder(d = led_ridge_dia, h = led_ridge_h);
+            
+            if (include_uv_leds)
+            if (z < 0)
+            for (x = [0, 5])
+            translate([-inner_dia / 2 - led_l - led_ridge_h - x, 0, led_off / 2])
+            rotate([0, 90, 0])
             cylinder(d = led_ridge_dia, h = led_ridge_h);
         }
         
@@ -444,7 +576,7 @@ module right_half_aaa_bat() {
     }
 }
 
-module right_half_testing() {
+module right_halt_aa_bat() {
     difference() {
         right_half();
         
@@ -454,8 +586,8 @@ module right_half_testing() {
             
             // TODO hacky
             if (enable_gap_support)
-            translate([-0.5, 14, 20])
-            cube([1, 13, test_bat_h + 2]);
+            translate([-0.5, 14 + 1, 20])
+            cube([1, 12, test_bat_h + 2]);
         }
         
         for (x = [test_bat_off / 2, -test_bat_off / 2])
@@ -470,9 +602,118 @@ module right_half_testing() {
     }
 }
 
+module lipo_pcb_cutout() {
+    translate([-lipo_pcb_w / 2, 0, lipo_pcb_usb_wall])
+    cube([lipo_pcb_w, lipo_pcb_d, lipo_pcb_h]);
+    
+    translate([-lipo_pcb_usb_w / 2, lipo_pcb_usb_off, -1])
+    cube([lipo_pcb_usb_w, lipo_pcb_usb_h, lipo_pcb_usb_wall + 2]);
+    
+    for (z = [0, lipo_pcb_led_off_z])
+    translate([lipo_pcb_w / 2 - lipo_pcb_led_off_x, 0, lipo_pcb_usb_wall + lipo_pcb_led_off_z + z])
+    rotate([-90, 0, 0])
+    cylinder(d = lipo_pcb_led_dia, h = 42);
+}
+
+module lipo_lid() {
+    difference() {
+        rotate([0, 0, 90 - lipo_lid_angle / 2])
+        linear_extrude(lipo_lid_height - lipo_lid_gap * 2)
+        difference() {
+            pie_slice(outer_dia / 2, lipo_lid_angle);
+            pie_slice(outer_dia / 2 - lipo_lid_d + lipo_lid_gap_d, lipo_lid_angle);
+        }
+        
+        // screw holes
+        for (z = [0, lipo_lid_height - 2 * lipo_lid_screw_off])
+        for (r = [1, -1])
+        rotate([0, 0, r * (lipo_lid_angle / 2 - circum_angle(lipo_lid_screw_area / 2, outer_dia))])
+        translate([0, outer_dia / 2 + 1, lipo_lid_screw_off - lipo_lid_gap + z])
+        rotate([90, 0, 0])
+        cylinder(d = lipo_lid_screw_d_big, h = lipo_lid_d + 2);
+    }
+}
+
+module right_half_lipo() {
+    difference() {
+        right_half();
+        
+        // space for lid
+        translate([0, 0, (height - lipo_lid_height) / 2])
+        rotate([0, 0, 90 - lipo_lid_angle_hole / 2])
+        linear_extrude(lipo_lid_height)
+        difference() {
+            pie_slice(outer_dia / 2 + 1, lipo_lid_angle_hole);
+            pie_slice(outer_dia / 2 - lipo_lid_d, lipo_lid_angle_hole);
+        }
+        
+        // compartment behind lid
+        translate([0, 0, (height - lipo_lid_height) / 2])
+        rotate([0, 0, 90 - lipo_lid_angle_compartment / 2])
+        linear_extrude(lipo_lid_height)
+        difference() {
+            pie_slice(outer_dia / 2 - lipo_lid_d + 1, lipo_lid_angle_compartment);
+            pie_slice(outer_dia / 2 - lipo_lid_d - lipo_lid_compartment_d, lipo_lid_angle_compartment);
+        }
+        
+        // screw holes
+        for (z = [0, lipo_lid_height - 2 * lipo_lid_screw_off])
+        for (r = [1, -1])
+        rotate([0, 0, r * (lipo_lid_angle / 2 - circum_angle(lipo_lid_screw_area / 2, outer_dia))])
+        translate([0, outer_dia / 2, (height - lipo_lid_height) / 2 + lipo_lid_screw_off + z])
+        rotate([90, 0, 0])
+        cylinder(d = lipo_lid_screw_d_small, h = lipo_lid_d + lipo_lid_screw_len);
+        
+        // charging pcb
+        translate([0, outer_dia / 2 - 11, 0]) {
+            lipo_pcb_cutout();
+            
+            %translate([-(lipo_pcb_w - 1) / 2, 0.5, lipo_pcb_usb_wall])
+            cube([lipo_pcb_w - 1, lipo_pcb_d - 1, lipo_pcb_h + 1]);
+        }
+        
+        translate([-lipo_w / 2, outer_dia / 2 - lipo_lid_d - lipo_d - circle_offset_deviation(lipo_w / 2, outer_dia - (lipo_lid_d * 2)) - 1, 32]) {
+            cube([lipo_w, lipo_d + 20, lipo_h]);
+            
+            %cube([lipo_w, lipo_d, lipo_h]);
+        }
+        
+        // TODO hacky power cable
+        translate([15, -10, 27])
+        rotate([-90, 0, 15])
+        cylinder(d = 6.0, h = outer_dia);
+        
+        for (t = texts_lipo)
+        rotate([0, 0, -t[4]])
+        translate([0, outer_dia / 2 - t[3], (height + thread_adapter_h) / 2])
+        rotate([0, -90, -90])
+        linear_extrude(height = t[3] + 1)
+        text(t[0], size = t[2], font = t[1], halign = "center", valign="center");
+    }
+    
+    // TODO hacky
+    if (enable_gap_support) {
+        translate([-0.5, 10, 17.5])
+        cube([1, 17, lipo_lid_height + 1]);
+        
+        for (x = [-12, 11])
+        translate([x, 10, 31])
+        cube([1, 10, 45]);
+    }
+}
+
+module assembly_right_half_lipo() {
+    right_half_lipo();
+    
+    color("green")
+    translate([0, 0, (height - lipo_lid_height) / 2 + lipo_lid_gap])
+    lipo_lid();
+}
+
 module assembly_closed() {
     //right_half_aaa_bat();
-    right_half_testing();
+    //right_halt_aa_bat();
+    assembly_right_half_lipo();
     
     rotate([0, 0, 180])
     left_half();
@@ -483,13 +724,11 @@ module assembly_closed() {
 
 module assembly_opened(angle) {
     translate([-outer_dia / 2, 0, 0]) {
-        //rotate([0, 0, angle / 2])
-        //translate([outer_dia / 2, 0, 0])
-        //right_half_aaa_bat();
-        
         rotate([0, 0, angle / 2])
         translate([outer_dia / 2, 0, 0])
-        right_half_testing();
+        //right_half_aaa_bat();
+        //right_halt_aa_bat();
+        assembly_right_half_lipo();
         
         rotate([0, 0, -angle / 2])
         translate([outer_dia / 2, 0, 0])
@@ -498,20 +737,23 @@ module assembly_opened(angle) {
     }
 }
 
+module print_all_thread_adapters() {
+    for (p = [0 : len(thread_profiles) - 1])
+    translate([(p - floor(len(thread_profiles) / 2)) * (outer_dia + 5), -outer_dia / 2 - 5, 0])
+    thread_profile_adapter(thread_profiles[p], true);
+}
+
 module print(all_thread_adapters) {
     translate([outer_dia / 2 + 5, 0, 0])
     left_half();
     
-    //translate([-outer_dia / 2 - 5, 0, 0])
-    //right_half_aaa_bat(true);
-    
     translate([-outer_dia / 2 - 5, 0, 0])
-    right_half_testing();
+    //right_half_aaa_bat();
+    //right_halt_aa_bat();
+    right_half_lipo();
 
     if (all_thread_adapters)
-    for (p = [0 : len(thread_profiles) - 1])
-    translate([(p - floor(len(thread_profiles) / 2)) * (outer_dia + 5), -outer_dia / 2 - 5, 0])
-    thread_profile_adapter(thread_profiles[p], true);
+    print_all_thread_adapters();
 }
 
 //lcd_cutout();
@@ -519,8 +761,25 @@ module print(all_thread_adapters) {
 //left_half();
 //right_half();
 
+//right_half_aaa_bat();
+//right_halt_aa_bat();
+
+//right_half_lipo();
+//lipo_lid();
+//assembly_right_half_lipo();
+
 //assembly_closed();
 //assembly_opened(90);
 
 //print(true);
-print(false);
+//print(false);
+
+//print_all_thread_adapters();
+
+//thread_profile_adapter(thread_profile_1911, true);
+//thread_profile_adapter(thread_profile_m14_cw, true);
+//thread_profile_adapter(thread_profile_m14_ccw, true);
+//thread_profile_adapter(thread_profile_giant, true);
+
+thread_profile_adapter(thread_profile_mac11, true);
+//mac11_extender();

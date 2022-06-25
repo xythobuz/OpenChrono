@@ -26,8 +26,12 @@ static void calculate(uint16_t a, uint16_t b) {
         ticks = (uint16_t)tmp;
     }
 
-    tick_new_value(ticks);
-    lcd_new_value();
+    double speed = tick_to_metric(ticks);
+    if ((speed >= MIN_SPEED) && (speed <= MAX_SPEED)) {
+        // only register realistic velocities
+        tick_new_value(ticks);
+        lcd_new_value();
+    }
 }
 
 static void measure() {

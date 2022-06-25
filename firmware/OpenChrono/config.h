@@ -77,8 +77,17 @@
 
 // --------------------------------------
 
+// with a prescaler of 1, we can measure from 17m/s to 1120000m/s
+// with a prescaler of 8, we can measure from 2.14m/s to 140000m/s
+// with a prescaler of 64, we can measure from 0.27m/s to 17500m/s
+// see comment in ticks.cpp
+
 // allowed values: 1, 8, 64, 256, 1024
 #define TIMER_PRESCALER 64
+
+// values outside this range will be ignored
+#define MIN_SPEED 0.3 /* in m/s */
+#define MAX_SPEED 2000.0 /* in m/s */
 
 // --------------------------------------
 
