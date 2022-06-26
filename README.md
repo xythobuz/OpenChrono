@@ -8,6 +8,8 @@ Fixed mounting on the front of the gun in the style of a silencer.
 
 Can optionally also include UV LEDs to illuminate tracer BBs.
 
+Please also [take a look at the write-up on my website](https://www.xythobuz.de/openchrono.html)!
+
 ## Hardware
 
 Use the included OpenSCAD design file in `hardware/openchrono.scad` to render your own custom STLs that fit your use-case.
