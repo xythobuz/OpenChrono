@@ -73,6 +73,9 @@ You need to put in a higher valued resistor instead, otherwise the small battery
 I recommend 4k Ohm or more.
 See [this page for more info](https://www.best-microcontroller-projects.com/tp4056.html#TP4056_Current_Programming_Resistor).
 
+[![Breadboard](electronics/OpenChrono_LiPo_bb.png)](electronics/OpenChrono_LiPo_bb.png)
+[![Schematics](electronics/OpenChrono_LiPo_schem.png)](electronics/OpenChrono_LiPo_schem.png)
+
 [![Breadboard](electronics/OpenChrono_bb.png)](electronics/OpenChrono_bb.png)
 [![Schematics](electronics/OpenChrono_schem.png)](electronics/OpenChrono_schem.png)
 
