@@ -5,6 +5,19 @@
  *
  * Copyright (c) 2022 Thomas Buck <thomas@xythobuz.de>
  *
+ * OpenChrono is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenChrono is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenChrono.  If not, see <https://www.gnu.org/licenses/>.
+ *
  * Two phototransistors connected to external interrupts 0 and 1.
  * Timer1 (16bit) used to count time between triggers.
  * Timer2 (8bit) used for timing UV LED pulse.
@@ -109,6 +122,8 @@ void timer_start() {
      * Then you can also reduce the UV LED resistor for
      * higher currents, according to the datasheet of
      * your UV LED.
+     * Make sure to keep within 40mA the AVR GPIO can provide.
+     * Otherwise you need to add a transistor for switching.
      */
     const static uint8_t pulse_length = 250;
 

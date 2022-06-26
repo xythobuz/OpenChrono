@@ -121,3 +121,22 @@ Set `PREFERRED_UNITS` to what you would like to see in the 2D graph.
 
 The range of speeds that can be measured is determined by `TIMER_PRESCALER`.
 Take a look at the comment in `firmware/OpenChrono/ticks.cpp` for details.
+
+## License
+
+OpenChrono is licensed under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.en.html).
+
+    Copyright (c) 2022 Thomas Buck <thomas@xythobuz.de>
+
+    OpenChrono is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OpenChrono is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenChrono.  If not, see <https://www.gnu.org/licenses/>.
