@@ -31,6 +31,10 @@
 volatile uint8_t trigger_a = 0, trigger_b = 0;
 volatile uint16_t time_a = 0, time_b = 0;
 
+#ifdef DEBUG_LONG_UV_TIME
+volatile static uint8_t led_runs = 0;
+#endif
+
 void interrupt_init() {
     // trigger both on rising edge
     EICRA = (1 << ISC00) | (1 << ISC01);
@@ -130,11 +134,33 @@ void timer_start() {
     // initial value we count up from
     TCNT2 = 0xFF - pulse_length;
 
+#ifdef DEBUG_LONG_UV_TIME
+    led_runs = 0;
+#endif
+
     // prescaler 64
     TCCR2B = (1 << CS22);
 }
 
 ISR(TIMER2_OVF_vect) {
+    /*
+     * When a BB is only dropped through the device it moves
+     * with something like 0.1m/s to 1m/s of velocity.
+     * So in this case it only moves the 7.5mm to the UV LEDs
+     * in 75ms to 7.5ms respectively.
+     * So our 1ms pulse is not illuminating it at all!
+     * In this case, we have to increase our pulse time by
+     * approx. factor 100.
+     */
+#ifdef DEBUG_LONG_UV_TIME
+    led_runs++;
+    if (led_runs < 100) {
+        // keep running for another millisecond
+        TCNT2 = 0xFF - 250;
+        return;
+    }
+#endif
+
     // turn off UV LED
     digitalWrite(UV_LED_PIN, LOW);
 

@@ -102,6 +102,9 @@
 #define MIN_SPEED 0.3 /* in m/s */
 #define MAX_SPEED 2000.0 /* in m/s */
 
+// enable to keep UV LED on 100x as long
+//#define DEBUG_LONG_UV_TIME
+
 // --------------------------------------
 
 // placeholder data for debugging purposes
